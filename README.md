@@ -1,5 +1,7 @@
 # sortedJSONStringify
 
+[![Build Status](https://travis-ci.org/jkr2255/sorted-json-stringify.svg?branch=master)](https://travis-ci.org/jkr2255/sorted-json-stringify)
+
 A function like `JSON.stringify` with the difference that all keys in Object are sorted by alphabetical order.
 
 It doesn't depend on the behaviors of objects in JavaScript engine; it sorts native output of `JSON.stringify`.
@@ -8,7 +10,7 @@ It doesn't depend on the behaviors of objects in JavaScript engine; it sorts nat
 
 the function accepts the same parameters as `JSON.stringify`, including `replacer` and `space`.
 
-It can be used by `import sortedJSONStringify from 'sorted-json stringify'` (in ES6), or `window.sortedJSONStringify` (from browser directly).
+It can be used by `import sortedJSONStringify from 'sorted-json-stringify'` (in ES6), or `window.sortedJSONStringify` (from browser directly).
 
 ## Changelog
 
