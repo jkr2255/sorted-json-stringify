@@ -1,0 +1,46 @@
+{
+  "name": "sorted-json-stringify",
+  "version": "0.0.1",
+  "babel": {
+    "presets": [
+      "es2015-rollup"
+    ]
+  },
+  "description": "Sorted version of JSON.stringify",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "build": "rollup -c",
+    "prepublishOnly": "npm run build && npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jkr2255/sorted-json-stringify.git"
+  },
+  "keywords": [
+    "json",
+    "sort"
+  ],
+  "author": "jkr2255",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jkr2255/sorted-json-stringify/issues"
+  },
+  "homepage": "https://github.com/jkr2255/sorted-json-stringify#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-es2015-rollup": "^3.0.0",
+    "chai": "^4.1.2",
+    "eslint": "^4.16.0",
+    "eslint-config-standard": "^11.0.0-beta.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "mocha": "^5.0.0",
+    "rollup": "^0.55.1",
+    "rollup-plugin-babel": "^3.0.3"
+  }
+}
