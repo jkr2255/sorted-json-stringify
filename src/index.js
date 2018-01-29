@@ -3,17 +3,18 @@
 function indexedArr (str) {
   const commaTrimmed = str.replace(/,$/, '');
   const spaceStripped = commaTrimmed.replace(/^ */, '');
-  return [commaTrimmed.length - spaceStripped.length, spaceStripped];
+  return {indent: commaTrimmed.length - spaceStripped.length, content: spaceStripped};
 }
 
+/** @return {string} */
 function pickKey (str) {
   const quoted = /^"(?:[^"\\]|\\.)*"/.exec(str)[0];
   return JSON.parse(quoted);
 }
 
-/** @param {[number, string][]} content */
+/** @param {{indent: number, content: string}[]} content */
 function sortContent (content) {
-  const keyArr = content.map((item, index) => [index, pickKey(item[0][1])]);
+  const keyArr = content.map((item, index) => [index, pickKey(item[0].content)]);
   keyArr.sort((a, b) => {
     if (a[1] === b[1]) return 0;
     if (a[1] < b[1]) return -1;
@@ -23,23 +24,24 @@ function sortContent (content) {
   return keyArr.map(item => content[item[0]]);
 }
 
+/** @param {{indent: number, content: string}[]} arr */
 function sortObject (arr) {
   for (let i = 0; i < arr.length; ++i) {
-    if (!/\{$/.test(arr[i][1])) continue;
-    const outerDepth = arr[i][0];
+    if (!/\{$/.test(arr[i].content)) continue;
+    const outerDepth = arr[i].indent;
     const content = [];
     let j = i + 1;
     for (; ; ++j) {
-      if (arr[j][0] === outerDepth) break;
+      if (arr[j].indent === outerDepth) break;
       const item = [arr[j]];
-      if (!/[[{]$/.test(arr[j][1])) {
+      if (!/[[{]$/.test(arr[j].content)) {
         content.push(item);
         continue;
       }
       ++j;
       for (;; ++j) {
         item.push(arr[j]);
-        if (arr[j][0] === outerDepth + 1) break;
+        if (arr[j].indent === outerDepth + 1) break;
       }
       content.push(item);
     }
@@ -73,16 +75,16 @@ const parseSpace = space => {
 
 const removeKeySpace = str => str.replace(/^("(?:[^"\\]|\\.)*":) /, '$1');
 
-/** @param {[number, string][]} arr */
-function indexed2JSON (arr, indent) {
+/** @param {{indent: number, content: string}[]} arr */
+function indexed2JSON (arr, indentStr) {
   return arr.map((row, index) => {
-    const unindented = row[1] +
-      ((row[0] === 0 || arr[index + 1][0] !== row[0]) ? '' : ',');
-    if (indent) {
-      return repeatStr(indent, row[0]) + unindented;
+    const unindented = row.content +
+      ((row.indent === 0 || arr[index + 1].indent !== row.indent) ? '' : ',');
+    if (indentStr) {
+      return repeatStr(indentStr, row.indent) + unindented;
     }
     return removeKeySpace(unindented);
-  }).join(indent ? '\n' : '');
+  }).join(indentStr ? '\n' : '');
 }
 
 export default function sortedStringify (obj, replacer, space) {
