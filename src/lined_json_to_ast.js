@@ -9,15 +9,22 @@ const parseArray = lines => {
   return {type: 'array', items};
 };
 
+function parseKeyAndValue (row) {
+  const char = row[row.length - 1];
+  if (char === '{' || char === '[') return [row.slice(0, -3), char];
+
+  const matches = /^("(?:[^\\"]|\\.)*"): (.+)$/.exec(row);
+  return [matches[1], matches[2]];
+}
+
 const parseObjectItem = lines => {
   const trimmed = lines.shift();
   if (trimmed === '}') return false;
-  const matches = /^("(?:[^\\"]|\\.)*"): (.+)$/.exec(trimmed);
-  const key = matches[1];
-  let value = matches[2];
-  if (value === '[') value = parseArray(lines);
-  else if (value === '{') value = parseObject(lines);
-  else value = parseScalar(value);
+  const [key, rawValue] = parseKeyAndValue(trimmed);
+  let value;
+  if (rawValue === '[') value = parseArray(lines);
+  else if (rawValue === '{') value = parseObject(lines);
+  else value = parseScalar(rawValue);
   return {key, value};
 };
 
