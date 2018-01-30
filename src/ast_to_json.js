@@ -7,11 +7,16 @@ const arrayASTToJSON = (ast, indent, currentIndent, suppressFirstIndent) => {
     maybeNewLine + currentIndent + ']';
 };
 
+const pickKey = str => {
+  if (str.indexOf('\\') === -1) return str.slice(1, -1);
+  return JSON.parse(str);
+};
+
 /** @param {{key: string, value: object}[]} items */
 const parseObjectItems = (items, indent, currentIndent) => {
   const keyValSeparator = indent ? ': ' : ':';
   // sort
-  const sortIndex = items.map((item, i) => [i, JSON.parse(item.key)]);
+  const sortIndex = items.map((item, i) => [i, pickKey(item.key)]);
   sortIndex.sort((a, b) => {
     if (a[1] === b[1]) return 0;
     if (a[1] < b[1]) return -1;
