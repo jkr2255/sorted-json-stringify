@@ -12,9 +12,18 @@ const pickKey = str => {
   return JSON.parse(str);
 };
 
+const objectItemToStr = (item, indent, currentIndent) => {
+  const keyValSeparator = indent ? ': ' : ':';
+  return currentIndent + item.key + keyValSeparator +
+    ASTToJSON(item.value, indent, currentIndent, true);
+};
+
 /** @param {{key: string, value: object}[]} items */
 const parseObjectItems = (items, indent, currentIndent) => {
-  const keyValSeparator = indent ? ': ' : ':';
+  if (items.length === 0) return [];
+  if (items.length === 1) {
+    return [objectItemToStr(items[0], indent, currentIndent)];
+  }
   // sort
   const sortIndex = items.map((item, i) => [i, pickKey(item.key)]);
   sortIndex.sort((a, b) => {
@@ -24,8 +33,7 @@ const parseObjectItems = (items, indent, currentIndent) => {
   });
   return sortIndex.map(idx => {
     const item = items[idx[0]];
-    return currentIndent + item.key + keyValSeparator +
-      ASTToJSON(item.value, indent, currentIndent, true);
+    return objectItemToStr(item, indent, currentIndent);
   });
 };
 
