@@ -20,7 +20,9 @@ function parseKeyAndValue (row) {
 const parseObjectItem = lines => {
   const trimmed = lines.shift();
   if (trimmed === '}') return false;
-  const [key, rawValue] = parseKeyAndValue(trimmed);
+  const tmp = parseKeyAndValue(trimmed);
+  const key = tmp[0];
+  const rawValue = tmp[1];
   let value;
   if (rawValue === '[') value = parseArray(lines);
   else if (rawValue === '{') value = parseObject(lines);

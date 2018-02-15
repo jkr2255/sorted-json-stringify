@@ -61,44 +61,6 @@ function ASTToJSON(ast, indent) {
   throw new Error('unknown ast');
 }
 
-var slicedToArray = function () {
-  function sliceIterator(arr, i) {
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"]) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
-  return function (arr, i) {
-    if (Array.isArray(arr)) {
-      return arr;
-    } else if (Symbol.iterator in Object(arr)) {
-      return sliceIterator(arr, i);
-    } else {
-      throw new TypeError("Invalid attempt to destructure non-iterable instance");
-    }
-  };
-}();
-
 // assume trimmed in index.js
 var parseArray = function parseArray(lines) {
   var items = [];
@@ -121,12 +83,9 @@ function parseKeyAndValue(row) {
 var parseObjectItem = function parseObjectItem(lines) {
   var trimmed = lines.shift();
   if (trimmed === '}') return false;
-
-  var _parseKeyAndValue = parseKeyAndValue(trimmed),
-      _parseKeyAndValue2 = slicedToArray(_parseKeyAndValue, 2),
-      key = _parseKeyAndValue2[0],
-      rawValue = _parseKeyAndValue2[1];
-
+  var tmp = parseKeyAndValue(trimmed);
+  var key = tmp[0];
+  var rawValue = tmp[1];
   var value = void 0;
   if (rawValue === '[') value = parseArray(lines);else if (rawValue === '{') value = parseObject(lines);else value = parseScalar(rawValue);
   return { key: key, value: value };
