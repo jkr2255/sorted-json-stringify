@@ -11,7 +11,7 @@
   "module": "src/index.js",
   "scripts": {
     "test": "mocha",
-    "build": "rollup -c",
+    "build": "rollup -c && uglifyjs index.js -cm -o index.min.js",
     "prepublishOnly": "npm run build && npm run test"
   },
   "repository": {
@@ -43,6 +43,6 @@
     "mocha": "^5.0.0",
     "rollup": "^0.55.1",
     "rollup-plugin-babel": "^3.0.3",
-    "rollup-plugin-uglify": "^3.0.0"
+    "uglify-es": "^3.3.9"
   }
 }

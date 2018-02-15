@@ -1,1 +1,191 @@
-!function(r,n){"object"==typeof exports&&"undefined"!=typeof module?module.exports=n():"function"==typeof define&&define.amd?define(n):r.sortedJSONStringify=n()}(this,function(){"use strict";var r=function(r,n,t,e){var u=t+n,o=r.items.map(function(r){return i(r,n,u)}),f=n?"\n":"";return(e?"":t)+"["+f+o.join(","+f)+f+t+"]"},n=function(r,n,t){var e=n?": ":":";return t+r.key+e+i(r.value,n,t,!0)},t=function(r,t,e){if(0===r.length)return[];if(1===r.length)return[n(r[0],t,e)];var i=r.map(function(r,n){return[n,(t=r.key,-1===t.indexOf("\\")?t.slice(1,-1):JSON.parse(t))];var t});return i.sort(function(r,n){return r[1]===n[1]?0:r[1]<n[1]?-1:1}),i.map(function(i){var u=r[i[0]];return n(u,t,e)})},e=function(r,n,e,i){var u=e+n,o=n?"\n":"",f=t(r.items,n,u);return(i?"":e)+"{"+o+f.join(","+o)+o+e+"}"};function i(n,t){var i=arguments.length>2&&void 0!==arguments[2]?arguments[2]:"",u=arguments.length>3&&void 0!==arguments[3]&&arguments[3];if("scalar"===n.type)return(u?"":i)+n.value;if("array"===n.type)return r(n,t,i,u);if("object"===n.type)return e(n,t,i,u);throw new Error("unknown ast")}var u=function(){return function(r,n){if(Array.isArray(r))return r;if(Symbol.iterator in Object(r))return function(r,n){var t=[],e=!0,i=!1,u=void 0;try{for(var o,f=r[Symbol.iterator]();!(e=(o=f.next()).done)&&(t.push(o.value),!n||t.length!==n);e=!0);}catch(r){i=!0,u=r}finally{try{!e&&f.return&&f.return()}finally{if(i)throw u}}return t}(r,n);throw new TypeError("Invalid attempt to destructure non-iterable instance")}}(),o=function(r){for(var n=[];;){var t=v(r);if(!t)break;n.push(t)}return{type:"array",items:n}};var f=function(r){var n=r.shift();if("}"===n)return!1;var t=function(r){var n=r[r.length-1];if("{"===n||"["===n)return[r.slice(0,-3),n];var t=/^("(?:[^\\"]|\\.)*"): (.+)$/.exec(r);return[t[1],t[2]]}(n),e=u(t,2),i=e[0],f=e[1];return{key:i,value:"["===f?o(r):"{"===f?a(r):c(f)}},a=function(r){for(var n=[];;){var t=f(r);if(!t)break;n.push(t)}return{type:"object",items:n}},c=function(r){return{type:"scalar",value:r}};function v(r){var n=r.shift();return"["===n?o(r):"{"===n?a(r):"]"!==n&&c(n)}var s=function(r){return"number"==typeof r?function(r,n){if(n=Math.floor(n),r=String(r),!(n>0)||""===r)return"";for(var t="",e=0;e<n;++e)t+=r;return t}(" ",Math.min(r,10)):"string"==typeof r?r.substring(0,10):""},l=function(r,n){return JSON.stringify(r,n,1).split(/,?\n */)};return function(r,n,t){var e=s(t);return i(v(l(r,n)),e)}});
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global.sortedJSONStringify = factory());
+}(this, (function () { 'use strict';
+
+var arrayASTToJSON = function arrayASTToJSON(ast, indent, currentIndent, suppressFirstIndent) {
+  var nextIndent = currentIndent + indent;
+  var parsedItems = ast.items.map(function (item) {
+    return ASTToJSON(item, indent, nextIndent);
+  });
+  var maybeNewLine = indent ? '\n' : '';
+  return (suppressFirstIndent ? '' : currentIndent) + '[' + maybeNewLine + parsedItems.join(',' + maybeNewLine) + maybeNewLine + currentIndent + ']';
+};
+
+var pickKey = function pickKey(str) {
+  if (str.indexOf('\\') === -1) return str.slice(1, -1);
+  return JSON.parse(str);
+};
+
+var objectItemToStr = function objectItemToStr(item, indent, currentIndent) {
+  var keyValSeparator = indent ? ': ' : ':';
+  return currentIndent + item.key + keyValSeparator + ASTToJSON(item.value, indent, currentIndent, true);
+};
+
+/** @param {{key: string, value: object}[]} items */
+var parseObjectItems = function parseObjectItems(items, indent, currentIndent) {
+  if (items.length === 0) return [];
+  if (items.length === 1) {
+    return [objectItemToStr(items[0], indent, currentIndent)];
+  }
+  // sort
+  var sortIndex = items.map(function (item, i) {
+    return [i, pickKey(item.key)];
+  });
+  sortIndex.sort(function (a, b) {
+    if (a[1] === b[1]) return 0;
+    if (a[1] < b[1]) return -1;
+    return 1;
+  });
+  return sortIndex.map(function (idx) {
+    var item = items[idx[0]];
+    return objectItemToStr(item, indent, currentIndent);
+  });
+};
+
+var objectASTToJSON = function objectASTToJSON(ast, indent, currentIndent, suppressFirstIndent) {
+  var nextIndent = currentIndent + indent;
+  var maybeNewLine = indent ? '\n' : '';
+  var parsedItems = parseObjectItems(ast.items, indent, nextIndent);
+  return (suppressFirstIndent ? '' : currentIndent) + '{' + maybeNewLine + parsedItems.join(',' + maybeNewLine) + maybeNewLine + currentIndent + '}';
+};
+
+function ASTToJSON(ast, indent) {
+  var currentIndent = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+  var suppressFirstIndent = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+
+  if (ast.type === 'scalar') return (suppressFirstIndent ? '' : currentIndent) + ast.value;
+  if (ast.type === 'array') return arrayASTToJSON(ast, indent, currentIndent, suppressFirstIndent);
+  if (ast.type === 'object') return objectASTToJSON(ast, indent, currentIndent, suppressFirstIndent);
+  throw new Error('unknown ast');
+}
+
+var slicedToArray = function () {
+  function sliceIterator(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"]) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  return function (arr, i) {
+    if (Array.isArray(arr)) {
+      return arr;
+    } else if (Symbol.iterator in Object(arr)) {
+      return sliceIterator(arr, i);
+    } else {
+      throw new TypeError("Invalid attempt to destructure non-iterable instance");
+    }
+  };
+}();
+
+// assume trimmed in index.js
+var parseArray = function parseArray(lines) {
+  var items = [];
+  while (1) {
+    var item = linedJSONToAST(lines);
+    if (!item) break;
+    items.push(item);
+  }
+  return { type: 'array', items: items };
+};
+
+function parseKeyAndValue(row) {
+  var char = row[row.length - 1];
+  if (char === '{' || char === '[') return [row.slice(0, -3), char];
+
+  var matches = /^("(?:[^\\"]|\\.)*"): (.+)$/.exec(row);
+  return [matches[1], matches[2]];
+}
+
+var parseObjectItem = function parseObjectItem(lines) {
+  var trimmed = lines.shift();
+  if (trimmed === '}') return false;
+
+  var _parseKeyAndValue = parseKeyAndValue(trimmed),
+      _parseKeyAndValue2 = slicedToArray(_parseKeyAndValue, 2),
+      key = _parseKeyAndValue2[0],
+      rawValue = _parseKeyAndValue2[1];
+
+  var value = void 0;
+  if (rawValue === '[') value = parseArray(lines);else if (rawValue === '{') value = parseObject(lines);else value = parseScalar(rawValue);
+  return { key: key, value: value };
+};
+
+var parseObject = function parseObject(lines) {
+  var items = [];
+  while (1) {
+    var item = parseObjectItem(lines);
+    if (!item) break;
+    items.push(item);
+  }
+  return { type: 'object', items: items };
+};
+
+var parseScalar = function parseScalar(trimmed) {
+  return { type: 'scalar', value: trimmed };
+};
+
+function linedJSONToAST(lines) {
+  var trimmed = lines.shift();
+  if (trimmed === '[') return parseArray(lines);
+  if (trimmed === '{') return parseObject(lines);
+  if (trimmed === ']') return false;
+  return parseScalar(trimmed);
+}
+
+var repeatStr = function repeatStr(str, count) {
+  count = Math.floor(count);
+  str = String(str);
+  // including NaN judgement
+  if (!(count > 0) || str === '') return '';
+  var ret = '';
+  for (var i = 0; i < count; ++i) {
+    ret += str;
+  }
+  return ret;
+};
+
+var parseSpace = function parseSpace(space) {
+  if (typeof space === 'number') {
+    return repeatStr(' ', Math.min(space, 10));
+  }
+  if (typeof space === 'string') {
+    return space.substring(0, 10);
+  }
+  return '';
+};
+
+var toLinedJSON = function toLinedJSON(obj, replacer) {
+  return JSON.stringify(obj, replacer, 1).split(/,?\n */);
+};
+
+function sortedStringify(obj, replacer, space) {
+  var indent = parseSpace(space);
+  var ast = linedJSONToAST(toLinedJSON(obj, replacer));
+  return ASTToJSON(ast, indent);
+}
+
+return sortedStringify;
+
+})));
